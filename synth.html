@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <title>Simple Synthesizer</title>
+    </head>
+    <body>
+        <div>Simple Synthesizer</div>
+        <div>
+            <input type="button" value="C" onclick='sendNote("C4")'>
+            <input type="button" value="D" onclick='sendNote("D4")'>
+            <input type="button" value="E" onclick='sendNote("E4")'>
+            <input type="button" value="F" onclick='sendNote("F4")'>
+            <input type="button" value="G" onclick='sendNote("G4")'>
+            <input type="button" value="A" onclick='sendNote("A4")'>
+            <input type="button" value="B" onclick='sendNote("B4")'>
+        </div>
+        
+        <script>
+            var synth ;
+            var ws ;
+
+            window.onload = function() {
+                 var context = new AudioContext();
+            // Setup all nodes
+                synth = new Tone.Synth();
+                synth.toMaster();
+                ws = new WebSocket("ws://" + location.host + "/music");
+                
+                window.onbeforeunload = function() {
+                    websocket.onclose = function () {}; // disable onclose handler first
+                    ws.close()
+                };
+
+                ws.onmessage = function(e) { 
+                    var string = e.data ;
+                    playNote(string) ;
+                };
+            };
+            
+            function playNote(note) {
+                const time = 0 ;
+                if (Tone.context.state !== 'running') {
+                Tone.context.resume();
+                };
+                synth.triggerAttackRelease(note, 0.25);
+            };
+            
+            function sendNote(note) {
+                ws.send(note) ;
+            };
+
+        </script>
+        <script src="Tone.js"></script>
+    </body>
+</html>
